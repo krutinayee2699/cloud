@@ -1,0 +1,100 @@
+New Project
+pom.xml -> 1.8
+exampleservice.java
+public String sayHello(){
+   return "Hello MSA";
+}
+new->java interface->MSAClient->package client->finish
+@RegisterRestClient(configKey="myclient")
+@GET
+public String sayHello();
+other sources->src->new folder->META-INF->finish
+new->propertyfile->microprofile-config->finish
+myclient/mp-rest/url=http://localhost:8080/MSAApp/rest/example
+new->servlet->MSAServlet->finish
+@Inject @RestClient MSAClient cl;
+cl.sayHello();
+New Project
+source->java interface->RemoteClient->finish
+@RegisterRestClient(configKey="rclient")
+@GET
+public String sayHello();
+othersources->new folder->META-INF->microprofile-config->finish
+rclient/mp-rest/url=http://localhost:8080/MSAApp/rest/example
+MSAApp->exampleservice.java
+@GET
+@Path("add/ {x}/{y}")
+@Produces(MediaType.Text_Plain)
+public String Sum(@PathParam("x") Integer x, @PathParam("y") Integer y) {
+        return new Integer(x.intValue() + y.intValue()).toString();
+}
+copy @get to public and paste in remoteclient of msaclient
+new->servlet->ClientServlet->finish
+@Inject @RestClient RemoteClient rcl;
+cl.sayHello();
+out.println("<h1>Sum of 40 and 50 " + rcl.Sum(40,50) + "</h1>");
+Terminal
+D:
+cd ICT3_25
+both jar file paste in project folder
+java -jar payara-micro-5.2022.2.jar --deploy MSAApp/artifact/MSAApp.war --port 8585
+java -jar payara-micro-5.2022.2.jar --deploy MSAClient/artifact/MSAClient.war --port 8585
+cd ICT3_25
+java -jar jwtenizr.jar
+jwt-token json file->sub:krutinayee upn:krutinayee groups:["Admin","Supervisor"] 
+again run java -jar jwtenizr.jar
+
+MSAApp->Bootstrap.java
+@LoginConfig(authMethod = "MP-JWT")
+@DeclareRoles({"Admin","Supervisor"})
+
+MSAApp->META-INF->microprofile-config->copy microprofile-config file and paste in MSAApp
+MSAApp->Exampleservice.java
+@RolesAllowed("Admin")->above every @get
+ClientApp->META-INF->token file->jwt-string=paste here
+RemoteClient.java
+@ClientHeaderParam(name="authorization", value="{generateJWTToken}")
+below public
+default String generateJWTToken(){
+Config config = ConfigProvider.getConfig();
+String token = config.getValue("jwt-String",String.class);
+String authtoken = "Bearer" + token;
+return authtoken;
+}
+
+MSAApp->sourcepackage->persistentunit->cloudpu->finish
+entity class from database(both project)
+Session Bean->Databean->stateless
+DataBean.java
+@PersistenceContext (unitName = "cloudpu")
+EntityManager em;
+    
+    public Collection<Department> getAllDepartments()
+    {
+        return em.createNamedQuery("Department.findAll").getResultList();
+    }
+exampleservice.java
+@Inject DataBean db;
+    
+    @RolesAllowed("Admin")
+    @GET
+    @Path("getAllDepartments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Department> getAllDepartments()
+    {
+        return db.getAllDepartments();
+    }
+
+MSAClient->RemoteClient.java
+@ClientHeaderParam(name = "authorization",value = "{generateJWTToken}")
+    @RolesAllowed("Admin")
+    @GET
+    @Path("getAllDepartments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Department> getAllDepartments();
+ClientServlet.java
+Collection<Department> departments = rcl.getAllDepartments();
+            for(Department d : departments)
+            {
+                out.println("<h1>Department Name : " + d.getDepartmentName()+"</h1>");
+            }
