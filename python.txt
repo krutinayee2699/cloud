@@ -1,0 +1,58 @@
+import pandas as pd import
+numpy as np import
+matplotlib.pyplot as plt
+# reading data automobile =
+pd.read_csv(&#39;Automobile_data.csv&#39;)
+print(automobile.head())
+# # # getting datatypes
+print(automobile.dtypes)
+#getting statistics
+print(automobile.describe())
+#cleaning data
+print(automobile.isnull().sum())
+# # #cleaning the normalized data
+# # # Find out number of records having &#39;?&#39; value for normalized losses
+print(automobile[&#39;normalized-losses&#39;].loc[automobile[&#39;normalized-losses&#39;] == &#39;?&#39;].count())
+# # #setting missing to mean
+# # # Setting the missing value to mean of normalized losses and conver the datatype
+to integer nl = automobile[&#39;normalized-losses&#39;].loc[automobile[&#39;normalized-losses&#39;] !=
+&#39;?&#39;] nlmean = nl.astype(str).astype(int).mean() automobile[&#39;normalized-losses&#39;] =
+automobile[&#39;normalized-losses&#39;].replace(&#39;?&#39;,nlmean).astype(int)
+print(automobile[&#39;normalized-losses&#39;].head())
+# #cleaning price data
+# # Find out the number of values which are not numeric
+print(automobile[&#39;price&#39;].str.isnumeric().value_counts())
+# #List out the values which are not numeric
+print(automobile[&#39;price&#39;].loc[automobile[&#39;price&#39;].str.isnumeric() == False])
+# #Setting the missing value to mean of price and convert the datatype to integer
+price = automobile[&#39;price&#39;].loc[automobile[&#39;price&#39;] != &#39;?&#39;] pmean =
+price.astype(str).astype(int).mean() automobile[&#39;price&#39;] =
+automobile[&#39;price&#39;].replace(&#39;?&#39;,pmean).astype(int) print(automobile[&#39;price&#39;].head())
+# #Checking the numberic and replacing with mean value and conver the datatype to
+integer automobile[&#39;horsepower&#39;].str.isnumeric().value_counts() horsepower =
+automobile[&#39;horsepower&#39;].loc[automobile[&#39;horsepower&#39;] != &#39;?&#39;] hpmean =
+horsepower.astype(str).astype(int).mean() automobile[&#39;horsepower&#39;] =
+automobile[&#39;horsepower&#39;].replace(&#39;?&#39;,pmean).astype(int)
+# #Checking the outlier of horsepower
+print(automobile.loc[automobile[&#39;horsepower&#39;] &gt; 10000]) # #Excluding the outlier
+data for horsepower print(automobile[np.abs(automobile.horsepower -
+automobile.horsepower.mean()) &lt;=
+(3*automobile.horsepower.std())])
+# #Find out the number of invalid value
+print(automobile[&#39;bore&#39;].loc[automobile[&#39;bore&#39;] == &#39;?&#39;])
+# #Replace the non-numeric value to null and convert the datatype
+automobile[&#39;bore&#39;] = pd.to_numeric(automobile[&#39;bore&#39;],errors=&#39;coerce&#39;)
+print(automobile.dtypes)
+# #Replace the non-number value to null and convert the datatype
+automobile[&#39;stroke&#39;] = pd.to_numeric(automobile[&#39;stroke&#39;],errors=&#39;coerce&#39;)
+print(automobile.dtypes)
+# #Convert the non-numeric data to null and convert the datatype
+automobile[&#39;peak-rpm&#39;] = pd.to_numeric(automobile[&#39;peak-rpm&#39;],errors=&#39;coerce&#39;)
+print(automobile.dtypes)
+# #remove the records which are having the value &#39;?&#39; automobile[&#39;num-of-
+doors&#39;].loc[automobile[&#39;num-of-doors&#39;] == &#39;?&#39;] automobile =
+automobile[automobile[&#39;num-of-doors&#39;] != &#39;?&#39;] automobile[&#39;num-of-
+doors&#39;].loc[automobile[&#39;num-of-doors&#39;] == &#39;?&#39;]
+automobile.make.value_counts().nlargest(10).plot(kind=&#39;bar&#39;, figsize=(15,5))
+plt.title(&#39;Number of vehicles by make&#39;) plt.ylabel(&#39;Number of vehicles&#39;)
+plt.xlabel(&#39;Make&#39;)
